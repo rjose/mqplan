@@ -78,7 +78,8 @@ charts.shortagechart = {
 drawDonut = function(svg, dataset, outerRadius, innerRadius, cx, cy, is_inverted) {
    // Parameters
    //
-   var labelSize = 20;
+   // TODO: Scale label based on size
+   var labelSize = 16;
    var color = d3.scale.category10();
    var textColor = "white";
    var stroke = "none";
@@ -131,7 +132,8 @@ drawHole = function(svg, dataset, radius, cx, cy, is_inverted) {
    //
    var outerRadius = radius;
    var innerRadius = 0;
-   var labelSize = 20;
+   // TODO: Scale this based on size
+   var labelSize = 16;
 
    var color = function(i) {return "#333"};
    var strokeWidth = 2;

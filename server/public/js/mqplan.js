@@ -24,8 +24,8 @@ chartsModule.controller("MQPlanCtrl",
                         {label: 'Track1', value: 10},
                         {label: 'Track2', value: 10}
                 ], shortage: [
-                        {label: 'Apps', value: 10},
-                        {label: 'Native', value: 8}
+                        {label: 'Apps', value: -3},
+                        {label: 'Native', value: -5}
                 ]}}},
       ];
    }]
@@ -65,6 +65,7 @@ chartsModule.directive("teamcharts", function() {
             charts.setChartWidth(svg, 700);
 
             // HACK: Figure out how to lay out charts and to set their sizes
+            // TODO: Move the click handler to its own function
             svg.selectAll("g.shortagechart")
                 .data(scope.charts)
                 .enter()
@@ -72,7 +73,10 @@ chartsModule.directive("teamcharts", function() {
                 .attr("transform", function(d, i) {
                         return "translate(" + (i * 300) + "," + 0 + ")";
                 })
-                .each(charts.shortagechart.drawChart);
+                .each(charts.shortagechart.drawChart)
+                .on('click', function(d) {
+                        console.log("Got a click");
+                 });
          });
       }
    } });

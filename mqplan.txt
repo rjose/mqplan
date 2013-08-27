@@ -75,6 +75,9 @@ I was able to draw an array of charts (very hacked up). Let's check this in
 need functions to layout the charts ahead of time (size, positions, num
 columns).
 
+Before we go, let's hook up a click handler for each chart. We may want to
+shrink the font size down as well. Done!
+
 Thoughts
 --------
 We should be able to pipe data into mqplan directly (sectioned by team). To
@@ -85,6 +88,8 @@ At some point, we should split qplan up into a generic server module that we
 can pull into mqplan and qplan.
 
 
+
 Action Items
 ------------
 - Make charts into their own module and share between qplan and mqplan
+- Need to clean up the charts (renaming, changing signatures)
