@@ -23,7 +23,7 @@ state.
 
 Implementation
 --------------
-. Set up mqplan repo with qplan subtree [][][]
+. [X] Set up mqplan repo with qplan subtree [X][][]
 . Draw array of shortage charts [][][][][]
 . Animate shortage charts to show detailed view [][][][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
@@ -50,12 +50,25 @@ subtree. OK, here's what we'll do:
 Done!
 
 
+2 - Draw array of shortage animation charts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The box charts are somewhat similar to this. I'll review the code there a
+little and see if I can draw an array of shortage charts. I'll use my
+live.html file as a starting point and add some functions to hook things up.
+To get this moving, I also need to get my server compiling. OK, I got it
+compiled. Let's get the lua files set up. Done. It's kindof hacked up, but
+that's ok. I'll create a setup branch and check in there.
+
+
 
 Thoughts
 --------
 We should be able to pipe data into mqplan directly (sectioned by team). To
 start, let's just cat data from multiple sources into mqplan. Maybe this is
 how we should always do this.
+
+At some point, we should split qplan up into a generic server module that we
+can pull into mqplan and qplan.
 
 
 Action Items
