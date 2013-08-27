@@ -1,0 +1,748 @@
+QPlan v5
+========
+Rino Jose <@rjose>
+v2, Aug 11, 2013: Revised text
+
+Overview
+--------
+I've been reading the
+link:http://www.amazon.com/The-UNIX-Philosophy-ebook/dp/B002OL2G4G[
+Unix Philsophy] again, and it's helped crystallize something that's been nagging me
+about qplan: it's not very unix-y. For instance:
+
+        - It has a captive user interface
+        - It doesn't interface with other programs
+        - The program isn't a filter
+        - It was starting to get too big and monolithic
+
+In this next version of qplan, I'd like to try to make the components of qplan
+smaller and have them all be filters. I want the programs to work with other
+unix utilities to manipulate and transform data. Ideally, we should be able to
+pipe data starting from Google spreadsheets, through all of our filters, and to
+our qplan server in a single pipeline. If we can do this, then we can store the
+data at any point and manipulate it at will, filtering and grouping on demand.
+Instead of having a commandline server shell, we'll just have a unix commandline
+shell like zsh.
+
+If we organized our programs this way, we could have separate formatting
+programs that would know how to take data (or sets of data) and prepare the
+appropriate output. We might have some for purely raw text output and some that
+produce JSON.
+
+When we want to broadcast data, we could send data through a pipe that
+ultimately constructs an http request to the qplan server which would push data
+over websockets to all clients.
+
+
+Architecture
+------------
+
+.Qplan Server
+The qplan server is the communications hub. It has the following
+responsibilities:
+
+        - Handle HTTP requests (web app and shell requests)
+        - Establish websocket connections for broadcasting to clients
+        - Maintain qplan data in a lua space
+
+We'll write this server as a small C program for a couple of reasons. The first
+is that we want this to be very light. We won't use any frameworks. We want this
+to be simple and unencumbered. The second reason is that I want to understand
+how the networking code works at a low level. The third is that I want to
+sharpen my C skills.
+
+We'll write the application logic in lua. Lua interfaces very easily with C.
+It's also very light and performant. It's also sufficiently high level and
+dynamic to enable rapid development. It can also be written in a way so that
+functionality can be shared between the server and the other code written in lua
+(e.g., the filters).
+
+
+.Generic filters
+There are certain data flow patterns that we'll see over and over again. One is
+reading data from managed sources (like Google docs or JIRA) and writing it to a
+pipeline that conditions the data and ultimately sends it to the qplan server.
+
+Another pattern is starting a pipeline that pulls data from the qplan server
+performs some computation on it to generate output. Here's a description of what
+some of the generic filters do:
+
+        - *gcat.py*: reads Google doc spreadsheet keys from stdin and writes the
+          contents to stdout.
+        - *stack_streams.sh*: Combines the output from several pipelines and
+          writes it to stdout with some header info for each pipe.
+        - *extract_packed.sh*: Extracts a field from a column and adds it at the
+          end of the output as the last column. An example of a packed column
+          value is "track:Ops,owner:Bill"
+        - *group_by.lua*: Rearranges the rows of data from stdin so they're
+          grouped by the values in a specified columns. The groupings are
+          sorted by the specified column values.
+        - *filter_num.sh*: Selects rows where the specified column values are
+          within the specified range.
+        - *filter_fp.sh*: Selects rows from stdin that contain the specified
+          packed field value.
+
+The generic filters should be copied to a standard location and used across
+applications.
+
+.QPlan filters: Initialization
+These filters are used to condition data from Google docs and initialize a qplan
+server.
+
+        - *qplan_condition.awk*: Takes work and staff spreadsheet data and
+          conditions it so it can be read by the qplan server.
+        - *qplan_updater.lua*: Reads conditioned data from stdin and constructs
+          a set of http requests to update the data in a qplan server.
+        - *qplan_pull.sh*: Defines an overall pipeline to pull data from Google
+          docs and send it to a qplan server.
+
+
+.QPlan filters: Computation
+These filters are used to do computation on estimate totals and net supply.
+
+        - *weeks_left.py*: Returns the number of weeks left in the specified
+          quarter.
+        - *running_estimate_sum.lua*: Reads rows of work items from stdin,
+          parses the estimates, and then writes running totals of the required
+          skills.
+        - *supply_sum.sh*: Reads rows of staff information and sums available
+          skills for a specified quarter (using current day to not count time in
+          the past).
+        - *net_left.awk*: Reads work items and skill supply from the output of
+          stack_streams.sh and writes a running list of net supply left to
+          stdout.
+
+
+.QPlan filters: Reports
+These are used to generate reports raw text and JSON reports. These should be
+pipable to the qplan server as part of a "live" feed that we can use in
+meetings.
+
+        - *rbt.lua*: ("report by track") Reads rows of work items grouped by
+          track and with a track column and constructs a raw text report of the
+          work in each track along with totals for each track.
+
+.QPlan filters: Utils
+These filters are nearly generic (perhaps we should make them truly generic?)
+
+        - *tracks.sh*: Takes a list of work items and writes out tracks in
+          sorted order. 
+
+
+Note on Modules
+~~~~~~~~~~~~~~~
+Modules shared between any two components should be pulled out into their own
+development repositories. These should also be installed in standard locations
+so we can leverage them as much as possible.
+
+
+
+Implementation
+--------------
+. Write google doc spreadsheet to stdout [X][X][][]
+. Condition data and pipe into mocked up qplan client [X][X][X]<X><X><X><X><X>
+. Get minimal qplan server running [X][X][X][X][X][X]
+. Establish websocket connection with server [X][X][X][X][][]
+. Handle websocket PING, CLOSE, and echo [X][X][X][X][X][][]
+. rbt is implemented as series of pipes [X][X][X][X][X]<X><X><X><X><X><X><X><X>
+. Push output of rbt to a browser [X][X][X][X][X][X]<X>
+. Push charts to browser (NOTE: Refactored before this) [X][X][X][X][X][]
+. Prep for planning meeting [][][][][][][][][][]
+
+
+1 - Write google doc spreadsheet to stdout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Let's see if we can just get something to work. I'll hardcode my password to
+begin with -- I have to remember not to check this version in! The first step
+is getting gspread to work. Let's see if we can get the sample working with
+our google doc spreadsheet. OK, I got the spreadsheet data out (and tab
+separated!). Let's move my username and password to a config file that only I
+can read. I'll call this .gcat.conf. Let's see if I can add my info to this
+and read it in. Done! Let's check this in.
+
+Before we go on too much further, let's think about how we want to deal with
+multiple spreadsheets. We could store two invocations of gcat in two variables
+and then manipulate the data separately, but it would be really nice if we
+could just store the immediate results directly at any point in the pipeline.
+We'd have to include some header info that described the type of data from
+each file. I'll look through the load.sh script to see how hard it would be to
+incorprate this...I think we could have a single awk script that could store
+data from various file types and then write them out in sections.
+
+Our qplan_client could just make an HTTP request to the qplan_server with the
+data. We'll need to add support for this to qplan (and a route). I wonder if
+we could just use curl to make the request for us?
+
+
+2 - Condition data and pipe into mocked up qplan_client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Let's start by creating a qplan_source.ini file that lists spreadsheet key,
+worksheet index, and type. We should be able to pipe this into gcat.py and
+have it do the extractions. Done. Let's check in. Before we go on, let's
+specify the sections to read in in the source.ini file itself.
+
+Next up is conditioning the work data a la workify. We want to gather all work
+data together. Let's start by handling different sections. I'm going to pipe
+this into a file so I don't have to keep grabbing data. Now, let's see if we
+can see the Work section.
+
+After this, we'll handle staff data. The staff data is somewhat interesting. I
+think I'll try to read the tracks out of the spreadsheet instead of hardcoding
+them. Alright, I wrote the staff parsing code by hand. It's much more
+resilient now.  Let's check this in.
+
+The last piece here is writing the qplan client. Should we write this in
+python, lua, or zsh? Let's do this in python. I want to split the data into
+work data and staff data. After that, I'll strip off the headers and make two
+requests to a server to update the data. I guess we can do a POST to
+/work_items and one to /assignments.
+
+Actually, I think we should do this in lua. That way, if I decide to go with
+websockets for the communication with the server, I can use the code I'm
+developing now. Also, I'm going to have an explicit updater app instead of a
+generic client. Also, what I'll do is make the POST requests to a nonexistent
+server and then in the next part bring over the code to run the server.
+
+
+NOTE: Why did this take so long? Part of this was dealing with non-ASCII data from
+the spreadsheet. Part of it was rewriting the staff parsing logic. Part of it
+was just debugging.
+
+3 - Get minimal qplan server running
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OK, the next step is to get a minimal qplan server to run. We *don't* want it
+to load any data files. That should come from cat-ing data into the
+qplan_updater. We'll bring files over one at a time and comment out any data
+loading. Alright, I got something running. Let's see if we can print out that
+we got a request. Hmmm...it looks like I'm not storing the body right now. At
+the first "\r\n", we stop reading. Need to check the content length. OK, read
+in a body now and passing it along to the handler.
+
+Some of the code that I'm adding feels prototype-y. I feel like I'm cutting a
+corner by trying to get it in so quickly. Not sure what the right level of
+testing I need to be doing right now.
+
+Anyways...let's see if I can hook the init code that parses work and staff to
+the resource router. This is in the app/data.lua and app/reader.lua. I'm going
+to create an array of work items in the handler and then figure out where to
+move the function. OK, I can construct work items. Next, let's construct staff
+and then create a plan. Hmmm...creating a plan kind of needs the work and
+staff items together. I'll get past this by having a global work_items
+variable. Going forward, websockets seems to be a better way of handling this.
+
+Alright, the last step here is updating the plan. I think I'll just do a POST
+with an empty body to "/plan" and have the router set things up for now. There
+are things about the plan (like the cutline) that are starting to make less
+sense now.
+
+Aargh! Running into newlines that are present in some of the columns. I think
+I'll have to go back up to gcat and just select the columns that don't have
+text that people are messing with.
+
+Hey, it worked! Let me add one more thing before I stop. I want to only
+highlight in red the items that are truly short of resources (not just below a
+feasible line).
+
+I really need to add some tests.
+
+
+4 - Establish websocket connection with server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alright, what I want to do is write a client that can establish a websocket
+connection. Let's start with just that. It looks like there's a lua
+link:https://github.com/lipp/lua-websockets/blob/master/src/websocket/handshake.lua[websockets
+module]. Looking through the source code, it looks pretty good. Let me see if
+I can get this running. Hmmm...got a build failure.
+
+I wonder if we could use node.js instead? Let me investigate. OK, I'll give
+link:https://github.com/einaros/ws[ws] a try. Install worked fine. Let's open
+a connection to a sample websocket site. OK, that worked just fine. Cool. This
+looks pretty nice. Since I have a reference implementation, I should be able
+to get my websocket version to work. Let's do this next. Actually, let's see
+what happens if I just try to create a connection. Got an error (as expected).
+
+Alright, let's see if we can hook up the websocket code to deal with the
+websocket request. I'm going to symlink the websocket files and try to do a
+build. Files built, but I got missing references to SHA1. Let's revise our
+GNUMakefile similar to what's in our websockets subdir. OK, that worked. Let's
+clean up our warnings and then check in. Alright, I cleaned up the warnings
+and all the tests passed!
+
+Now, we should be able to hook the functions in. Let's see if we can recognize
+a websocket request. We want to use "ws_is_handshake". Alright, I can
+distinguish these. Awesome. Let's split the "handle_request_routine" into an
+http handler and a websocket handler next. OK, I started in on this, but it
+looks too tangly. Let's back out what we've done and rethink this. Let's try
+splitting the variables into pre read request and post. Let's write a function
+to read the request string and one to read the body next. OK, I can read
+a request string and a body using separate functions now.
+
+So, now we're back to splitting the http and websocket handling. We need to be
+careful about unlocking the lua context mutex. Alright, this is done. Next up
+is adding the websocket handling function. I'll complete the handshake and
+then let the connection close. It worked! Let's check this piece in. Actually,
+we're done with this piece. Let's rebase and tag.
+
+
+5 - Handle websocket PING, CLOSE, and echo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Let's start by reading in the frame. Once we have that, we should be able to
+check what kind of frame it is. We'll have to use our same buffered read
+function. I'm going to add some websocket-y code in web.c (for gathering
+frames, etc.), but if I can make this generic, this should be pulled out.
+Hmmm...this will take a little longer than I thought because I have to write
+the code that gathers the frames. Let's do echo first, since I think that's
+the easiest. Let's see if we can at least extract a message.
+
+Hmmm...I'm running into an issue with the second byte being NULL. I wonder if
+I'm nulling out the result. Nope, it was a fencepost error in
+my_buffered_read. Aargh.
+
+There's a couple of things going on in my head right now. The first is that I
+need to implement the websockets code in the websockets module. The second is
+that I should use wireshark to debug the communication between client and
+server. The third is that I want to set up my git repo a bit better for this.
+
+Let's see how hard it is to set up Wireshark. I'll give it 1 pomodoro. The
+good news is that *yum install wireshark* just worked. Well almost. I also had
+to do a *yum install wireshark-gnome*. OK, I did the echo and see the
+exchange. Cool. I can see the data I sent over. The echoed message is correct.
+After the echo, I see that the client sent over "88 82 d0 ec f2 0f d3 04".
+Let's see if I can figure this out. The first byte means "final and CLOSE".
+The second byte means "is masked with length of 2". Not sure what the message
+body is. Let's try to handle the CLOSE frame and see if that cleans things up.
+Yup, that was it. I'll check this in and then try to handle PONG. Alright, it
+turns out that my PONG frame is incomplete. I'm only sending 1 byte. I need to
+be sending 2.
+
+OK, found another bug. I need to return an explicit length when constructing
+the websocket frames -- strlen will stop at the first 0x0 byte. This will
+break the tests... I think what I'll do is fix the PONG case and then circle
+back to the websocket library when I work on that in earnest. Alright, I was
+able to get the PING/PONG to work. Technically, I'm done so let's check in and
+then rethink my git strategy.
+
+
+6 - rbt is implemented as series of pipes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alright, we're finally at the point where we were aiming at from the start: to
+replace much of the lua app logic with shell scripts that can be composed. I
+suppose the first step is to take a sweep through the code and identify which
+files can be deleted and which need to be ported. Once we have that, we can
+delete what's no longer needed and focus on converting the other code to generic
+scripts.
+
+Here are files that we may no longer need:
+
+- app/data.lua (for reading data from file)
+- app/lua_ui.lua (pure lua shell)
+
+Here are files that we'll need to rethink/port:
+
+- app/writer.lua (write tags)
+- app/json_format.lua (needed for formatting ajax responses)
+- app/person.lua (summing bandwidth)
+- app/qplan.lua (qplan init)
+- app/reader.lua (parse tags)
+- app/select.lua (filter and group)
+- app/text_format.lua (text-based reports)
+- app/web_ui.lua (handle http and websocket requests)
+- app/work.lua (parse estimates, create work filters, computes merged triage,
+  get demand by skill, compute running demand)
+
+Can we store people and work in straight tables and have generic
+scripts/programs that can manipulate the tags and filter data, etc? Let's bring
+over some real data so I can at least manually verify anything that I'm
+changing. I had to install the
+link:https://github.com/diegonehab/luasocket[socket.http]
+module for lua as well and do a "make install-both" to get both 5.1 and 5.2
+
+
+.Debugging
+Alright, I'm running into a problem where the json that I'm sending to the
+browser is invalid. Let's see if I can figure out what's going on. The data in
+qplan seems to be correct. I wonder if I'm running into an issue with the json
+module. It looks like there was an extra "'" character that wasn't escaped
+properly. Seems to be a behavior difference between chromium and chrome on OS X.
+
+.Making composable scripts
+We want to start by getting all of the work and then filter out triage and
+track. We also want to get all staff within a track. I wonder if we can use
+process substitution in the shell for this. I just added an example of doing
+this (rbt.sh). Let's check in.
+
+Alright, let's create a route that dumps all of the work items in a format that
+we can manipulate. We'll start by just dumping the rankings and names...we also
+dumped the rest. Now, let's see if we can filter out by track. Done. Alright,
+let's see if we can add a triage filter next. I think awk is the best choice for
+this since we'll be looking at a particular column. We should probably allow the
+column to specified. Actually, this should be a generic number filter that takes
+a min and max for a column. Done. Let's check this in.
+
+After that, let's have a script that generates a list of all tracks. Done!
+
+Next up is selecting staff. We should be able to use the *exact* same filters to
+filter by track. We'll start off by adding a text route similar to work. Looks
+good. Let's check this in.
+
+Now, let's see if we can sum estimates and availability. It seems like the same
+thing at some level. We should be able to sum any skill field. We should
+lowercase the fields first. For supply, we need to multiply by a factor. We
+should take that to be the start and end dates of the quarter filtered through
+the current date. We'll have a one shot sum across people. We'll have a running
+sum across work. We'll have a running net supply given the two. We don't need to
+carry the source data along -- we just want the data.
+
+Alright, let's start with the weeks computation. Here's what I'd like it to do:
+
+- weeks_left.py Q3 (Q3 of current year)
+- weeks_left.py Q2 2014 (Q2 of 2014)
+
+OK, let's see if we can do a skill supply computation next. We should pipe the
+weeks computation and the staff list into a script. The output should look
+something like: Apps:23.5,Native:21.5,Web:8.6. Done!
+
+The next thing we need to do is compute a running total for the work items. We
+just need to pick off the estimate column and then run it through a script.
+Since we've already coded this up in lua, let's run it through a lua script.
+Done!
+
+OK, now we want to compute the running net left. To do this, we need a script
+that can gather the outputs from multiple programs and send them back out in one
+stream. I wrote "stack_stream.sh" for this purpose. Let's check it in. Next, we
+need to have a script that can pick the pieces apart. Let's try doing this in
+awk. Done! Let's check in.
+
+Alright, at this point, I think we have everything we need to generate the same
+information as the web page.
+
+Let's examine the output of rbt next and see if we can generalize the text-based
+report. Alright, we have a list of work items grouped by track and with summary
+info in each grouping. Then we have a total summary. Conceptually, we want to
+take all work, filter by triage, and then group by track and have some summary
+info at the end. To do the group by cleanly, we should have another script that
+can extract a packed column (like track). Let's write this one next. I think awk
+is the way to go. Done.
+
+We should do a group by filter next. I was thinking about just bundling this
+with whatever program would do the final work, but it seems that we should do
+this separately -- it makes it easier for other programs. Let's use lua for this
+since its arrays are easier to use as arrays than awk. Alright, group by works.
+Tried it with tracks and triage. Let's check in.
+
+OK, we're finally at the point where we can start creating the rbt function with
+shell pipelines. Let's do this in lua (since we already have functions that can
+update estimates). Alright, I have the general formatting in place. Let's check
+in and then add the required people. Now to get the required people, we'll need
+to grab some functions from "running_estimate_sum.lua". Let's add them to a
+lua_modules directory. Done. Also finished up the rbt script. Whew!
+
+One thing we should do before wrapping up is documenting all of the scripts I've
+put together and how to use them.
+
+
+7 - Push output of rbt to browser
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alright, what do we need to do here? We need a basic html page that establishes
+a websocket connection with the qplan server. I can follow the websocket echo
+demo to see what that looks like. I should also figure out what the browser API
+looks like for this. On the qplan side, we need to keep track of the "live"
+websocket connections in lua. I'll have to look at the websocket code to see the
+info that's needed. We'll also need to add a route that sends data to the live
+websocket clients. Lastly, we'll need to figure out some protocol for how to
+interpret the data that's sent. For instance, are there directives like "RAW"
+that just shows raw text and "PIECHART" that renders the data in a chart? Is it
+straight text or JSON?
+
+Let's start by establishing a websocket connection from a browser. We'll make
+the websocket variable a global for now. Done. Let's check this in. OK, let's
+move back a step and look at how to store and reference websocket connections in
+lua. I think all we need is the connfd. When a connection is established, we
+should call a lua function to register it; when it closes, we should call a
+function to deregsiter it. We'll also need to expose a function that can send
+text frames.
+
+OK, got a thread running through to register_connection. Let's check this in.
+Now, let's actually store the connection and then add the deregister
+function...Done. Let's check in. Now, we need register a C function that we can
+call from lua to broadcast a websocket message. Let's register something empty
+first and then hook it up. This will be called via a web request. We should
+register this function from qplan.c. I'll do a little test by calling
+"push_message" from the repl. Done! Let's check this in. Alright, one small
+enhancement is to write a broadcast function in lua. We'll test it by sending to
+multiple clients. Should also test when one of them closes. Actually, just
+tested this by writing to a bogus file descriptor -- it brings down the whole
+app. Let's see if we can fix this. Done. OK, now we can write our broadcast
+function. Done! Let's check in.
+
+Now that we have a thread running through, I should be able to add a "broadcast"
+endpoint that takes JSON. What should the format of the message be? How about
+something like this:
+
+{"command": "raw",
+ "text": "Some formatted message"}
+
+{"command": "piechart",
+ "labels": ["Alpha", "Beta", "Gamma"],
+ "values": [10, 20, 30]}
+
+Let's add the server endpoint first and have it just print what it got to
+console. I'll use curl like this:
+
+----
+curl -X POST -H "Content-type: application/json"
+-d '{"command": "raw", "text": "Howdy"}' localhost:8888/broadcast
+----
+
+Let's broadcast to clients and then check in...Done!
+
+The next step is writing a lua script that reads from stdin and constructs a
+"raw broadcast".
+
+After that, let's put an angular page together for showing the raw
+text. After that, we can write a "broadcast script" to send data to that
+endpoint. Done! (I also ran into an issue where the SIGPIPE signal brought down
+the app. Fixed this by ignoring it in main since I'm handling the error case on
+write). Another problem was that the lua http.socket library wasn't very good at
+handling non-simple cases. I switched to python instead.
+
+The last thing I want to do today is create an angular controller for displaying
+raw data. Once I have this in place, I should be able to cat the rbt data into
+browsers. Done! Here's the command:
+
+----
+cat rbt_input.txt | filter_pf.sh track "tab|sop|aus" | filter_num.sh 5 1 3 |
+rbt.lua `weeks_left.py Q4` | broadcast_raw.py
+----
+
+OK, we're done with this. Let's check in.
+
+
+8 - Push charts to browser
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+NOTE: The "Refactor" section below occured just before this step.
+
+We're going to use link:http://d3js.org/[d3] to render our charts. We'll start
+at the client side first and render a pie chart. I think we'll do demand by
+track (for the 1s, say). Once we figure out the data we need and how to render
+it, we'll step backwards. We'll probably need a "broadcast_chart" script and
+then some pipeline to get the data into the right format.
+
+Alright, let's follow along with the d3 book to get something started. OK, I'm
+beginning to see a little. Whenever we do an "svg.selectAll", we're passing in
+the identifier of an link:http://www.w3.org/TR/SVG/[SVG] shape (circle, rect,
+ellipse, polygon, text, etc.). The attributes of these shapes are well-defined.
+
+What I need to understand next are the d3 layouts. This is how a pie chart is
+created. OK, looks like layouts transform data into a format that can be
+rendered by a particular chart. Alright, I was able to draw a pie chart. Let's
+check this in (we'll rebase this checkin out when we're done).
+
+Before we go on, I'm going to read through the SVG spec first to make sure I
+get a sense of what's in it. OK, it looks like "g" is a generic container
+element (there are a number of them). The "d" in "path" is indeed path data. It
+has moveto and lineto commands within it. I think "arc" is something within d3
+(yeah, just checked the source).
+
+OK, I added some javascript to render a piechart. I also added a
+broadcast_piechart.py file with some dummy data. Was able to broadcast raw text
+and a piechart.
+
+Now, let's come up with a format for pie charts. I'll write this up by hand and
+see how it looks...Done! Let's check this in. Now, let's see if we can add
+labels. Done.
+
+Finally, let's add a chart title. Done. Before we go, let's clean up the
+function (margins, comments, etc.), then we can rebase.
+
+Had an idea for a "shortage chart" where the inner part of a donut chart could
+represent the shortages by skill.
+
+
+9 - Prep for planning meeting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The main goal here is getting the charts and reports and data flows in place to
+support an efficient running of the planning meetings. Before we get into this
+properly, I'd like to take a refactor sweep through the code.
+
+.Refactor
+First, let's sort our included headers (I'm using :1,10!sort to sort lines 1
+through 10, for instance). Next, let's add some header lines (Use 75i=ESC to add
+row of double dashes). Alright, qplan.c is cleaned up. Let's hit tcp next. I
+think we should reformat each file one-by-one. We'll rebase the lot of them when
+we're done. Alright, let's hit context.c next. Now, let's sweep through web.c.
+Done. Now, let's make sure we have oneline descriptions for each function
+heading. Done!
+
+I also want to go through the websockets library. I wonder if we'll end up
+splitting the ws.c file into a couple of pieces -- it's pretty big right now.
+Let's move stuff from the header to the C file first. After that, we can break
+things up (handshake, frames, read?). Let's try pulling handshake out first.
+Done. Next, let's do the frame functions. Done. I also moved the read message
+functions to their own file.
+
+NOTE: Moving the spec for this to specs/lay_out_charts.txt
+
+
+Refactor
+--------
+
+Writing tests
+~~~~~~~~~~~~~
+The first thing we should do (before any refactoring) is to come up with a test
+strategy. We have examples of lua tests in server/modules. These use lua_unit.
+For our C modules, we're using gnustep-test. For our shell scripts, we don't
+really have any tests. We need to find a tool to use here.
+
+In general, tests for each module should be in a subdirectory of that module.
+Each module should have a shell script called "run_tests.sh" that runs the
+tests, sending the results to stdout. At some point, we should have this script
+emit results in a standard format.
+
+I also need a way to test our shell scripts. Let's look at
+link:https://code.google.com/p/shunit2[shunit2], and see how it feels. It's
+written in shell script and seems pretty light. I think it'll work.
+
+There should be a top-level "run_tests.sh" script that can run the complete set
+of tests and generate a result summary.
+
+As we refactor, I'll add appropriate test directories whenever I touch something
+new. If it makes sense to test something I'm changing, I'll do it there first.
+Otherwise, I'll just add an empty test for reference.
+
+Remove repl
+~~~~~~~~~~~
+The shell should be our repl, so we don't really need this. I'll start by
+joining on the web server thread instead of the repl.
+
+Create lua_modules repo
+~~~~~~~~~~~~~~~~~~~~~~~
+Anything that's purely app specific should be in the server/lua directory. This
+should be things like json_format, person, plan, qplan, select, websocket,
+web_ui (rename to routes?), and work. Let's create this repo and then move the
+files over. We'll need to update the lua search paths so they can reach them.
+For the time being, I'll symlink the lua_modules directory in. Afterwards, we'll
+add this as a git subtree.
+
+Alright, let's see if we can run our scripts. I'll start with the qplan server
+and then move to the parent directory. I imagine most of this will be paths.
+Alright, the server works. Let's try the lua scripts next. Done. Let's see if
+the existing tests work. Done. Alright, let's check in lua_modules.
+
+Now, let's check in the changes in qplan (it will be broken for this commit
+until we add lua_modules as a subtree).
+
+OK, now let's add lua_modules as a subtree. Here are the steps:
+
+        . git remote add lm_remote git@github.com:rjose/lua_modules.git
+        . git fetch lm_remote
+        . git checkout -b lm_branch lm_remote/master
+        . git checkout refactor
+        . git read-tree --prefix=lua_modules -u lm_branch
+        . git commit
+
+Before we finish this piece, let's see if we can clean up the lua modules in
+server/app. I got rid of the writer.lua file by using tags.lua. Let's try to get
+rid of the reader.lua file by moving the construct_work function to work.lua and
+the construct_person function to person.lua. We'll also remove references to
+qplan_init.
+
+Oh, a couple more things here. Let's rename web_ui to router. Let's also see if
+we can squeeze out json_format and select. I got rid of json_format, but
+couldn't get rid of select.lua.
+
+Rename C files
+~~~~~~~~~~~~~~
+Alright, let's just do some simple renaming. I want qplan_context => context and
+tcp_io => tcp. First, I'll do qplan_context. Just a file rename. After that,
+I'll rename the variables as well.
+
+Alright, let's rename tcp_io => tcp
+
+Create shell_utils
+~~~~~~~~~~~~~~~~~~
+Same drill as with lua_modules:
+
+        . git remote add shu_remote git@github.com:rjose/shell_utils.git
+        . git fetch shu_remote
+        . git checkout -b shu_branch shu_remote/master
+        . git checkout refactor
+        . git read-tree --prefix=shell_utils -u shu_branch
+        . git commit
+
+
+Let's finish up by making the filter_track.sh script generic. I've renamed it to
+filter_pf.sh (for packed field). To push the changes back to the shell_utils
+repo, I did the following:
+
+        . git checkout shu_branch
+        . git merge --squash -s subtree --no-commit refactor
+        . git commit
+        . git push shu_remote shu_branch:master
+
+Now, let's rebase the refactor branch onto master, merge it, and delete it.
+
+
+
+Debug CPU Utilization
+---------------------
+Every time I create a new websocket connection, I'm seeing the CPU utilization
+increase. Looking in gdb, I see that most of the threads are in "read". Let's
+set a breakpoint there and see if we keep hitting it. Looks like it's happening
+in "my_read". May need to do something like a select on this.
+
+Hmmm. Seems like whenever the pipe breaks, then we always get a "ready to read".
+I wonder if we can check the error state from select? Checking this, but that
+wasn't the problem. It looks like when the pipe is closed, the socket becomes
+readable, but there's nothing there. Needed to check for this case. Things look
+much better now.
+
+Notes
+-----
+I'm using a link:https://github.com/craigmj/json4lua[json lua package].
+Basically just installing the json writing part in the lua path.
+
+I'm using link:https://github.com/burnash/gspread[gspread] to grab data from
+google doc spreadsheets.
+
+Refactoring takes a while sometimes, especially when there are variables that
+aren't well separated.
+
+Need some mechanism for deregistering connections when they close. Perhaps we
+can do this when there's a failed websocket message?
+
+Peter DeVries: "Write drunk; edit sober"
+
+Thoughts
+--------
+I think I'm getting into a mode where I need more of a backlog of items and a
+lightweight spec for each item. Perhaps I can move the action items to a backlog
+file and then have a separate directory for the lightweight specs. I suppose an
+alternative would be to use github for the issue tracking. That feels a little
+wrong to me. It's another data store that needs to be managed. It would be more
+in the spirit of qplan to use straight text files. This might also be useful as
+a format for JIRA items.
+
+Let's just try a bunch of things and see what feels right. Hmmm. Maybe we should
+just use org mode. No, that doesn't feel right. I think we need to have
+lightweight specs for each item and use grep to list items by state. We might
+have the following states:
+
+        - Backlog: Spec'd but not started
+        - Active: Currently under development
+        - Complete: Work is done
+
+Yeah, let's try this.
+
+
+Action Items
+------------
+- Use a common format for stacked output (e.g., make gcat.py match stackstreams)
+- Add favicon
+- Work on layout of charts (center, etc.)
+- Look into high CPU utilization (must be the broken pipes)
+- Add chart for unfunded or low triage items that are high in other teams (and
+  vice versa)
+- Add chart showing work items by size, triage (x axis), and value (y axis)
+- Make qplan into a generic server that can be customized via lua (need to
+  specify port as well. Also need to point to website root)
