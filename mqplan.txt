@@ -1,0 +1,62 @@
+MQPlan
+======
+Rino Jose <@rjose>
+v1, Aug 26, 2013: Initial version
+
+Overview
+--------
+The goal of this app is to assemble quarterly planning data from multiple
+teams and present it in a concise form. The initial page should be an array of
+shortage charts from each team. The app should be super simple. You can click
+on a shortage chart. That's it. When you click on a shortage chart from the
+initial screen, a detail view should be displayed on the right side of the
+screen. This will show items that are resourced and items that are not
+resourced. Dependencies on other teams should be indicated as well. If a
+dependency is unfunded, it should be indicated somehow. We should probably
+follow the dependency chain to the end and indicate which parts are in red.
+There's some logic here.
+
+Clicking on a selected shortage chart should move back to the initial view.
+Clicking on a different shortage chart should move to that team's selected
+state.
+
+
+Implementation
+--------------
+. Set up mqplan repo with qplan subtree [][][]
+. Draw array of shortage charts [][][][][]
+. Animate shortage charts to show detailed view [][][][][]
+. Display detailed view [][][][][][][] (need data, need to resize svg, need
+hash fragments)
+. cat data from multiple qplan servers into a stacked file [][][][]
+
+
+1 - Set up mqplan repo with qplan subtree
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Where should we add the qplan subtree? Maybe we should add a "modules"
+directory and put qplan in there. We can always change this.
+
+We should probably tag qplan first and then tag it again when it's been
+modified for mqplan. I'll have to refer to my notes for qplan to add a
+subtree. OK, here's what we'll do:
+
+        . git remote add qp_remote git@github.com:rjose/qplan.git
+        . git fetch qp_remote
+        . git checkout -b qp_branch qp_remote/master
+        . git checkout master
+        . git read-tree --prefix=modules/qplan/ -u qp_branch
+        . git commit
+
+Done!
+
+
+
+Thoughts
+--------
+We should be able to pipe data into mqplan directly (sectioned by team). To
+start, let's just cat data from multiple sources into mqplan. Maybe this is
+how we should always do this.
+
+
+Action Items
+------------
