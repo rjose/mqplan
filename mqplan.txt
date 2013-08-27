@@ -68,7 +68,7 @@ data. Let's add this to a controller scope and see if we can render it.
 
 Alright, I put some data together with 2 charts. Let's try adding them next.
 OK, I added one chart. I think we need to add these as a group. Before we do
-this, let's check in.
+this, let's check in. Alright, let's see if we can add charts to a group.
 
 Thoughts
 --------

@@ -60,7 +60,6 @@ chartsModule.directive("teamcharts", function() {
                .attr("width", width)
                .attr("height", height);
 
-
             charts.shortagechart.draw(svg, scope.charts[0].data);
 
             //if (scope.chart.type == 'shortagechart') {

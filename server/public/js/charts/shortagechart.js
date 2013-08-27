@@ -21,6 +21,8 @@ charts.shortagechart = {
    //
    draw: function(svg, chart) {
       if (!chart.type) return;
+
+      // TODO: Set this ahead of time
       var height = 700;
       var width = 700;
       charts.setChartHeight(svg, height);
@@ -31,6 +33,10 @@ charts.shortagechart = {
       var topMargin = 20;
       var cx = outerRadius + leftMargin;
       var cy = outerRadius + topMargin;
+
+
+      var g = svg.append("g")
+              .attr("class", "shortagechart");
 
       // Compute total demand
       var totalDemand = 0;
@@ -50,15 +56,15 @@ charts.shortagechart = {
          var innerRadius = outerRadius *
                            Math.sqrt(shortageInfo.totalShortage/totalDemand);
 
-         drawDonut(svg, chart.dataset.demand, outerRadius, innerRadius, cx, cy, false);
-         drawHole(svg, shortageInfo.shortages, innerRadius, cx, cy, false);
+         drawDonut(g, chart.dataset.demand, outerRadius, innerRadius, cx, cy, false);
+         drawHole(g, shortageInfo.shortages, innerRadius, cx, cy, false);
       }
       else {
          var innerRadius = outerRadius *
             Math.sqrt(totalDemand/(shortageInfo.totalShortage + totalDemand));
 
-         drawHole(svg, chart.dataset.demand, innerRadius, cx, cy, true);
-         drawDonut(svg, shortageInfo.shortages, outerRadius, innerRadius, cx, cy, true);
+         drawHole(g, chart.dataset.demand, innerRadius, cx, cy, true);
+         drawDonut(g, shortageInfo.shortages, outerRadius, innerRadius, cx, cy, true);
       }
    }
 }
