@@ -75,7 +75,13 @@ chartsModule.directive("teamcharts", function() {
                 })
                 .each(charts.shortagechart.drawChart)
                 .on('click', function(d) {
-                        console.log("Got a click");
+                        var selectedChart = d3.select(this);
+                        console.log(selectedChart);
+                        selectedChart.transition()
+                                .duration(1000)
+                                .attr("transform", function(d, i) {
+                                        return "translate(" + (i * 300 + 200) + "," + 0 + ")";
+                                });
                  });
          });
       }

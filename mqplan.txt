@@ -76,7 +76,8 @@ need functions to layout the charts ahead of time (size, positions, num
 columns).
 
 Before we go, let's hook up a click handler for each chart. We may want to
-shrink the font size down as well. Done!
+shrink the font size down as well. Done! OK, let's try animating to a position
+on click.
 
 Thoughts
 --------
