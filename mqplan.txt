@@ -57,9 +57,18 @@ little and see if I can draw an array of shortage charts. I'll use my
 live.html file as a starting point and add some functions to hook things up.
 To get this moving, I also need to get my server compiling. OK, I got it
 compiled. Let's get the lua files set up. Done. It's kindof hacked up, but
-that's ok. I'll create a setup branch and check in there.
+that's ok. I'll create a setup branch and check in there. Done.
 
+OK, let's create a controller that we can use to add scope to. I'll unhook the
+websocket stuff and focus on getting an array of charts rendered. OK, I have a
+controller that can put a title into a page. Let's review box charts next.
+They're adding an svg element for each box. Why couldn't we just add "g"
+objects to a parent svg element? I'd have to supply an array of shortage chart
+data. Let's add this to a controller scope and see if we can render it.
 
+Alright, I put some data together with 2 charts. Let's try adding them next.
+OK, I added one chart. I think we need to add these as a group. Before we do
+this, let's check in.
 
 Thoughts
 --------
@@ -73,3 +82,4 @@ can pull into mqplan and qplan.
 
 Action Items
 ------------
+- Make charts into their own module and share between qplan and mqplan

@@ -12,15 +12,14 @@ var analyzeShortages = null;
 //==============================================================================
 // Public API
 //
+// TODO: Add example of data to pass in
 
 charts.shortagechart = {
 
    //------------------------------------------------------------------------------
    // Draws shortage chart in svg element.
    //
-   draw: function(svg, scope) {
-      var chart = scope.chart;
-
+   draw: function(svg, chart) {
       if (!chart.type) return;
       var height = 700;
       var width = 700;

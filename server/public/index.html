@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html ng-app="mqplan">
+<head>
+   <meta charset="UTF-8">
+   <title>Live Feed</title>
+   <script src="./js/jquery.min.js"></script>
+   <script src="./js/angular.min.js"></script>
+   <script src="./js/d3.v3.min.js"></script>
+
+   <script src="./js/charts.js"></script>
+   <script src="./js/charts/shortagechart.js"></script>
+
+   <script src="./js/mqplan.js"></script>
+</head>
+
+<body>
+
+   <div ng-controller="MQPlanCtrl">
+      <div id="main-content">
+         <h2>{{ title }}</h2>
+         <div teamcharts></div>
+      </div>
+
+      <ul>
+              <li>{{ charts.length }}</li>
+              <li>{{ charts[0].title }}</li>
+      </ul>
+
+   </div>
+
+
+
+</body>
+
+</html>
