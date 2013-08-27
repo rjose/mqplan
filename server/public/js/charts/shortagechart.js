@@ -16,17 +16,21 @@ var analyzeShortages = null;
 
 charts.shortagechart = {
 
+   drawChart: function(d) {
+        charts.shortagechart.draw(d3.select(this), d.data);
+   },
+
    //------------------------------------------------------------------------------
    // Draws shortage chart in svg element.
    //
-   draw: function(svg, chart) {
+   draw: function(g, chart) {
       if (!chart.type) return;
 
       // TODO: Set this ahead of time
-      var height = 700;
-      var width = 700;
-      charts.setChartHeight(svg, height);
-      charts.setChartWidth(svg, width);
+      var height = 300;
+      var width = 300;
+      charts.setChartHeight(g, height);
+      charts.setChartWidth(g, width);
 
       var outerRadius = height / 2.0 * 0.8;
       var leftMargin = 15;
@@ -34,9 +38,6 @@ charts.shortagechart = {
       var cx = outerRadius + leftMargin;
       var cy = outerRadius + topMargin;
 
-
-      var g = svg.append("g")
-              .attr("class", "shortagechart");
 
       // Compute total demand
       var totalDemand = 0;

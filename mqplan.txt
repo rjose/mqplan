@@ -24,7 +24,8 @@ state.
 Implementation
 --------------
 . [X] Set up mqplan repo with qplan subtree [X][][]
-. Draw array of shortage charts [][][][][]
+. Draw array of shortage charts [X][X][X][X][]
+. Lay out shortage charts [][][][][][]
 . Animate shortage charts to show detailed view [][][][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
 hash fragments)
@@ -68,7 +69,11 @@ data. Let's add this to a controller scope and see if we can render it.
 
 Alright, I put some data together with 2 charts. Let's try adding them next.
 OK, I added one chart. I think we need to add these as a group. Before we do
-this, let's check in. Alright, let's see if we can add charts to a group.
+this, let's check in. Alright, let's see if we can add charts to a group. OK,
+I was able to draw an array of charts (very hacked up). Let's check this in
+(with the intent to rebase out). Given this exercise, I realize that we also
+need functions to layout the charts ahead of time (size, positions, num
+columns).
 
 Thoughts
 --------

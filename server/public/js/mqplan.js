@@ -49,7 +49,6 @@ chartsModule.directive("teamcharts", function() {
          var height = el.offsetHeight;
 
          scope.$watch('charts', function() {
-                 console.log(scope.charts[0]);
             if (!scope.charts) return;
 
             // Clear out contents before creating new chart
@@ -60,12 +59,20 @@ chartsModule.directive("teamcharts", function() {
                .attr("width", width)
                .attr("height", height);
 
-            charts.shortagechart.draw(svg, scope.charts[0].data);
+            // TODO: Figure out how to set the size of the chart based on the
+            // input data.
+            charts.setChartHeight(svg, 700);
+            charts.setChartWidth(svg, 700);
 
-            //if (scope.chart.type == 'shortagechart') {
-            //   charts.shortagechart.draw(svg, scope);
-            //}
-
+            // HACK: Figure out how to lay out charts and to set their sizes
+            svg.selectAll("g.shortagechart")
+                .data(scope.charts)
+                .enter()
+                .append("g").attr("class", "shortagechart")
+                .attr("transform", function(d, i) {
+                        return "translate(" + (i * 300) + "," + 0 + ")";
+                })
+                .each(charts.shortagechart.drawChart);
          });
       }
    } });
