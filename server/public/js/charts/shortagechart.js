@@ -16,15 +16,38 @@ var analyzeShortages = null;
 
 charts.shortagechart = {
 
+    MAX_CHART_WIDTH: 320,
     SINGLE_CHART_HEIGHT: 320,
+    NUM_CHARTS_PER_ROW: 3,
 
     getChartHeight: function(width, chartArray) {
-        return this.SINGLE_CHART_HEIGHT;
+        return this.SINGLE_CHART_HEIGHT *
+            Math.ceil(chartArray.length / this.NUM_CHARTS_PER_ROW);
     },
 
+    getChartLayout: function(chartArray) {
+        var xStep = this.MAX_CHART_WIDTH;
+        var yStep = this.SINGLE_CHART_HEIGHT;
 
-    drawChart: function(d) {
+        var curX = 0;
+        var curY = 0;
+        var result = [];
+        for (var i=0; i < chartArray.length; i++) {
+            curX = xStep * (i % this.NUM_CHARTS_PER_ROW);
+            curY = yStep * Math.floor(i / this.NUM_CHARTS_PER_ROW);
+            result.push([curX, curY]);
+        }
+        return result;
+    },
+
+    drawChart: function(d, i) {
         charts.shortagechart.draw(d3.select(this), d.data);
+    },
+
+    layOutCharts: function(selection, layouts) {
+        selection.attr("transform", function(d, i) {
+            return "translate(" + (layouts[i][0]) + "," + (layouts[i][1]) + ")";
+        });
     },
 
     //------------------------------------------------------------------------------

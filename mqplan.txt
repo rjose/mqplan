@@ -99,6 +99,11 @@ is set in the scope, we should check if a chart is selected or not. This will
 set the width. I'll add a note to this effect and go on. Done. Let's check
 this in.
 
+Next, let's write a layout function for the charts and figure out where to
+call it and use it. I want to pass in an array of charts and get back an array
+of layouts whose indices correspond to the chart array. Done! Let's check this
+in and then work on chart size.
+
 Thoughts
 --------
 We should be able to pipe data into mqplan directly (sectioned by team). To
@@ -112,6 +117,9 @@ can pull into mqplan and qplan.
 
 Action Items
 ------------
+- Add title to charts
+- Scale down fonts
+- Add number of people as well
 - Make charts into their own module and share between qplan and mqplan
 - Need to clean up the charts (renaming, changing signatures)
 - Figure out how to create namespaces without using global vars

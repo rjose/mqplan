@@ -27,6 +27,22 @@ chartsModule.controller("MQPlanCtrl",
                         {label: 'Apps', value: -3},
                         {label: 'Native', value: -5}
                 ]}}},
+        {title: 'Chart 3', data: {type: 'shortagechart',
+                dataset: {demand: [
+                        {label: 'Track1', value: 10},
+                        {label: 'Track2', value: 20}
+                ], shortage: [
+                        {label: 'Apps', value: 10},
+                        {label: 'Native', value: 5}
+                ]}}},
+        {title: 'Chart 4', data: {type: 'shortagechart',
+                dataset: {demand: [
+                        {label: 'Track1', value: 10},
+                        {label: 'Track2', value: 10}
+                ], shortage: [
+                        {label: 'Apps', value: -3},
+                        {label: 'Native', value: -5}
+                ]}}}
       ];
    }]
 );
@@ -68,13 +84,12 @@ chartsModule.directive("teamcharts", function() {
             if (selectedChart) {
                 chartWidth = 320;
             }
-
             var chartHeight = charts.shortagechart.getChartHeight(chartWidth, scope.charts);
-
-            // TODO: Figure out how to set the size of the chart based on the
-            // input data.
             charts.setChartHeight(svg, chartHeight);
             charts.setChartWidth(svg, chartWidth);
+
+            // Get chart layout
+            var chartLayouts = charts.shortagechart.getChartLayout(scope.charts);
 
             // HACK: Figure out how to lay out charts and to set their sizes
             // TODO: Move the click handler to its own function
@@ -86,6 +101,7 @@ chartsModule.directive("teamcharts", function() {
                         return "translate(" + (i * 300) + "," + 0 + ")";
                 })
                 .each(charts.shortagechart.drawChart)
+                .call(charts.shortagechart.layOutCharts, chartLayouts)
                 .on('click', function(d) {
                         var selectedChart = d3.select(this);
                         console.log(selectedChart);
