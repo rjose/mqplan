@@ -10,6 +10,13 @@ chartsModule.controller("MQPlanCtrl",
    ['$scope',
    function($scope) {
       $scope.title = "Array of Charts!";
+      $scope.selected = null;
+
+      $scope.selectChart = function(index) {
+          console.log("Selecting " + index);
+          $scope.selected = index;
+      };
+
       $scope.charts = [
         {title: 'Chart 1', data: {type: 'shortagechart',
                 dataset: {demand: [
@@ -83,7 +90,7 @@ chartsModule.directive("teamcharts", function() {
             // shortage charts.
             var chartWidth = 960;
             if (selectedChart) {
-                chartWidth = 320;
+                chartWidth = 640;
             }
             var chartHeight = charts.shortagechart.getChartHeight(chartWidth, scope.charts);
             charts.setChartHeight(svg, chartHeight);
@@ -105,25 +112,35 @@ chartsModule.directive("teamcharts", function() {
             var chartLayouts =
                 charts.shortagechart.getChartLayout(scope.charts,chartSizes);
 
+            var data = [];
+            for (var i=0; i < scope.charts.length; i++) {
+                data.push({
+                    data: scope.charts[i],
+                    size: chartSizes[i],
+                    layout: chartLayouts[i]
+                });
+            }
+
 
             // HACK: Figure out how to lay out charts and to set their sizes
             // TODO: Move the click handler to its own function
             svg.selectAll("g.shortagechart")
-                .data(scope.charts)
+                .data(data)
                 .enter()
                 .append("g").attr("class", "shortagechart")
-                .each(function(d, i) {
-                    charts.shortagechart.draw(d3.select(this), d, chartSizes[i]);
+                .each(function(d) {
+                    charts.shortagechart.draw(d3.select(this), d);
                 })
-                .call(charts.shortagechart.layOutCharts, chartLayouts)
-                .on('click', function(d) {
-                        var selectedChart = d3.select(this);
-                        console.log(selectedChart);
-                        selectedChart.transition()
-                                .duration(1000)
-                                .attr("transform", function(d, i) {
-                                        return "translate(" + (i * 300 + 200) + "," + 0 + ")";
-                                });
+                .on('click', function(d, i) {
+                    scope.selectChart(i);
+                    scope.$apply();
+
+//                        var selectedChart = d3.select(this);
+//                        selectedChart.transition()
+//                                .duration(1000)
+//                                .attr("transform", function(d, i) {
+//                                        return "translate(" + (i * 300 + 200) + "," + 0 + ")";
+//                                });
                  });
          });
       }

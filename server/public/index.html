@@ -17,16 +17,14 @@
 <body>
 
    <div ng-controller="MQPlanCtrl">
+      <ul>
+              <li>{{selected}}</li>
+      </ul>
+
       <div id="main-content">
          <h2>{{ title }}</h2>
          <div teamcharts></div>
       </div>
-
-      <ul>
-              <li>{{ charts.length }}</li>
-              <li>{{ charts[0].title }}</li>
-      </ul>
-
    </div>
 
 

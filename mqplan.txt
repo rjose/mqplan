@@ -116,6 +116,12 @@ Second, let's add the chart title. We may need to add some margins. OK, the
 titles are being displayed. Let's get the margins working. Looks pretty good.
 Just need to center the titles. Done!
 
+4 - Animate shortage charts to show detailed view
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Let's start by computing the layout for a selected chart. We'll move it to the
+top center and then move all the other charts below it. We'll trigger this on
+click. OK, I can wire things up. I think I should add some metadata to the
+data on initialization. Let me try exploring this. Done. Let's check this in.
 
 
 Thoughts

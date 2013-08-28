@@ -106,7 +106,11 @@ charts.shortagechart = {
     //------------------------------------------------------------------------------
     // Draws shortage chart in svg element.
     //
-    draw: function(g, chart, size) {
+    draw: function(g, chartData) {
+        var chart = chartData.data;
+        var size = chartData.size;
+        var layout = chartData.layout;
+
         if (!chart.data.type) return;
         var dataset = chart.data.dataset;
 
@@ -124,6 +128,9 @@ charts.shortagechart = {
 
         charts.setChartHeight(g, height);
         charts.setChartWidth(g, width);
+
+        // Lay out chart
+        g.attr("transform", "translate(" + (layout[0]) + "," + (layout[1]) + ")");
 
         // Compute total demand
         var totalDemand = 0;
