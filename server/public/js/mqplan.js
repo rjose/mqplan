@@ -89,9 +89,6 @@ chartsModule.directive("teamcharts", function() {
             charts.setChartHeight(svg, chartHeight);
             charts.setChartWidth(svg, chartWidth);
 
-            // Get chart layout
-            var chartLayouts = charts.shortagechart.getChartLayout(scope.charts);
-
             // Compute chart sizes
             var chartEffortSizes = [];
             for (var i=0; i < scope.charts.length; i++) {
@@ -103,6 +100,11 @@ chartsModule.directive("teamcharts", function() {
             var chartSizes = charts.shortagechart
                .normalizeDimensions(charts.shortagechart.SINGLE_CHART_HEIGHT,
                                     chartEffortSizes);
+
+            // Get chart layout
+            var chartLayouts =
+                charts.shortagechart.getChartLayout(scope.charts,chartSizes);
+
 
             // HACK: Figure out how to lay out charts and to set their sizes
             // TODO: Move the click handler to its own function

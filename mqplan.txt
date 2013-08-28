@@ -110,6 +110,13 @@ sizes. This seems like a TDD thing. Done! Also did normalizeDimensions. Let's
 check this in. OK, now let's change the chart size based on this. Hmmm. We
 need to change the size at the call of "draw". Done!
 
+OK, a couple more things here. First, let's center the charts on x. I think we
+need to pass the chart sizes into getChartLayout. Done. Let's check in.
+
+Second, let's add the chart title.
+
+
+
 Thoughts
 --------
 We should be able to pipe data into mqplan directly (sectioned by team). To

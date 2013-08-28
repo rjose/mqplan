@@ -79,7 +79,7 @@ charts.shortagechart = {
         return result;
     },
 
-    getChartLayout: function(chartArray) {
+    getChartLayout: function(chartArray, chartSizes) {
         var xStep = this.MAX_CHART_WIDTH;
         var yStep = this.SINGLE_CHART_HEIGHT;
 
@@ -87,7 +87,8 @@ charts.shortagechart = {
         var curY = 0;
         var result = [];
         for (var i=0; i < chartArray.length; i++) {
-            curX = xStep * (i % this.NUM_CHARTS_PER_ROW);
+            var sizeOffset = (this.MAX_CHART_WIDTH - chartSizes[i])/2.0;
+            curX = xStep * (i % this.NUM_CHARTS_PER_ROW) + sizeOffset;
             curY = yStep * Math.floor(i / this.NUM_CHARTS_PER_ROW);
             result.push([curX, curY]);
         }
