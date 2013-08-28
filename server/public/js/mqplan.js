@@ -99,7 +99,10 @@ chartsModule.directive("teamcharts", function() {
                     charts.shortagechart
                       .getEffortSize(scope.charts[i].data.dataset));
             }
-            console.log(chartEffortSizes);
+
+            var chartSizes = charts.shortagechart
+               .normalizeDimensions(charts.shortagechart.SINGLE_CHART_HEIGHT,
+                                    chartEffortSizes);
 
             // HACK: Figure out how to lay out charts and to set their sizes
             // TODO: Move the click handler to its own function
@@ -107,10 +110,9 @@ chartsModule.directive("teamcharts", function() {
                 .data(scope.charts)
                 .enter()
                 .append("g").attr("class", "shortagechart")
-                .attr("transform", function(d, i) {
-                        return "translate(" + (i * 300) + "," + 0 + ")";
+                .each(function(d, i) {
+                    charts.shortagechart.draw(d3.select(this), d.data, chartSizes[i]);
                 })
-                .each(charts.shortagechart.drawChart)
                 .call(charts.shortagechart.layOutCharts, chartLayouts)
                 .on('click', function(d) {
                         var selectedChart = d3.select(this);

@@ -94,10 +94,6 @@ charts.shortagechart = {
         return result;
     },
 
-    drawChart: function(d, i) {
-        charts.shortagechart.draw(d3.select(this), d.data);
-    },
-
     layOutCharts: function(selection, layouts) {
         selection.attr("transform", function(d, i) {
             return "translate(" + (layouts[i][0]) + "," + (layouts[i][1]) + ")";
@@ -107,12 +103,12 @@ charts.shortagechart = {
     //------------------------------------------------------------------------------
     // Draws shortage chart in svg element.
     //
-    draw: function(g, chart) {
+    draw: function(g, chart, size) {
         if (!chart.type) return;
+        console.log(size);
 
-        // TODO: Set this ahead of time
-        var height = 300;
-        var width = 300;
+        var height = size;
+        var width = size;
         charts.setChartHeight(g, height);
         charts.setChartWidth(g, width);
 

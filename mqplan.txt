@@ -25,7 +25,7 @@ Implementation
 --------------
 . [X] Set up mqplan repo with qplan subtree [X][][]
 . [X] Draw array of shortage charts [X][X][X][X][X]
-. Lay out shortage charts [][][][][][]
+. Lay out shortage charts [X][X][X][][][]
 . Animate shortage charts to show detailed view [][][][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
 hash fragments)
@@ -107,7 +107,8 @@ total demand/supply. This seems like a good candidate for a test. Let's write
 a function to compute this for one chart. Done. Let's check this in. OK, now
 we can map this function over an array of charts. Done. Now, let's scale the
 sizes. This seems like a TDD thing. Done! Also did normalizeDimensions. Let's
-check this in.
+check this in. OK, now let's change the chart size based on this. Hmmm. We
+need to change the size at the call of "draw". Done!
 
 Thoughts
 --------
@@ -127,6 +128,7 @@ Action Items
 - Add title to charts
 - Scale down fonts
 - Add number of people as well
+- Handle dependencies to empty shortage charts
 - Make charts into their own module and share between qplan and mqplan
 - Need to clean up the charts (renaming, changing signatures)
 - Figure out how to create namespaces without using global vars
