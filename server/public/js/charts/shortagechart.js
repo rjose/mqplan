@@ -35,9 +35,11 @@ charts.shortagechart = {
     MAX_CHART_WIDTH: 320,
     SINGLE_CHART_HEIGHT: 320,
     NUM_CHARTS_PER_ROW: 3,
+    TOP_MARGIN: 50,
 
     getChartHeight: function(width, chartArray) {
-        return this.SINGLE_CHART_HEIGHT *
+
+        return (this.SINGLE_CHART_HEIGHT +this.TOP_MARGIN) *
             Math.ceil(chartArray.length / this.NUM_CHARTS_PER_ROW);
     },
 
@@ -81,7 +83,7 @@ charts.shortagechart = {
 
     getChartLayout: function(chartArray, chartSizes) {
         var xStep = this.MAX_CHART_WIDTH;
-        var yStep = this.SINGLE_CHART_HEIGHT;
+        var yStep = this.SINGLE_CHART_HEIGHT + this.TOP_MARGIN;
 
         var curX = 0;
         var curY = 0;
@@ -89,7 +91,7 @@ charts.shortagechart = {
         for (var i=0; i < chartArray.length; i++) {
             var sizeOffset = (this.MAX_CHART_WIDTH - chartSizes[i])/2.0;
             curX = xStep * (i % this.NUM_CHARTS_PER_ROW) + sizeOffset;
-            curY = yStep * Math.floor(i / this.NUM_CHARTS_PER_ROW);
+            curY = this.TOP_MARGIN + yStep * Math.floor(i / this.NUM_CHARTS_PER_ROW);
             result.push([curX, curY]);
         }
         return result;
@@ -105,29 +107,46 @@ charts.shortagechart = {
     // Draws shortage chart in svg element.
     //
     draw: function(g, chart, size) {
-        if (!chart.type) return;
-        console.log(size);
+        if (!chart.data.type) return;
+        var dataset = chart.data.dataset;
 
         var height = size;
         var width = size;
-        charts.setChartHeight(g, height);
-        charts.setChartWidth(g, width);
+        var titleSize = 24;
+
 
         var outerRadius = height / 2.0 * 0.8;
         var leftMargin = 15;
         var topMargin = 20;
         var cx = outerRadius + leftMargin;
         var cy = outerRadius + topMargin;
+        var titleIndent = 20;
 
+        charts.setChartHeight(g, height);
+        charts.setChartWidth(g, width);
 
         // Compute total demand
         var totalDemand = 0;
-        for (var i=0; i < chart.dataset.demand.length; i++) {
-            totalDemand += chart.dataset.demand[i].value;
+        for (var i=0; i < dataset.demand.length; i++) {
+            totalDemand += dataset.demand[i].value;
         }
 
         // Analyze shortages
-        var shortageInfo = analyzeShortages(chart.dataset.shortage);
+        var shortageInfo = analyzeShortages(dataset.shortage);
+
+        // Add chart title
+        var title = g.append('text')
+         .attr("font-size", titleSize + "px")
+         .attr("font-family", charts.FONT_FAMILY)
+         .text(chart.title);
+
+        var textWidth = title[0][0].clientWidth;
+        var horizMargin = 40;
+        var titleOffset = (size - horizMargin - textWidth)/2.0;
+        if (titleOffset < 0)
+            titleOffset = 0;
+        title.attr("transform", "translate(" + (titleOffset) + "," + (-10) + ")");
+
 
         //
         // Draw donut and hole
@@ -138,14 +157,14 @@ charts.shortagechart = {
             var innerRadius = outerRadius *
                 Math.sqrt(shortageInfo.totalShortage/totalDemand);
 
-            drawDonut(g, chart.dataset.demand, outerRadius, innerRadius, cx, cy, false);
+            drawDonut(g, dataset.demand, outerRadius, innerRadius, cx, cy, false);
             drawHole(g, shortageInfo.shortages, innerRadius, cx, cy, false);
         }
         else {
             var innerRadius = outerRadius *
                 Math.sqrt(totalDemand/(shortageInfo.totalShortage + totalDemand));
 
-            drawHole(g, chart.dataset.demand, innerRadius, cx, cy, true);
+            drawHole(g, dataset.demand, innerRadius, cx, cy, true);
             drawDonut(g, shortageInfo.shortages, outerRadius, innerRadius, cx, cy, true);
         }
     }

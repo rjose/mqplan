@@ -25,7 +25,7 @@ Implementation
 --------------
 . [X] Set up mqplan repo with qplan subtree [X][][]
 . [X] Draw array of shortage charts [X][X][X][X][X]
-. Lay out shortage charts [X][X][X][][][]
+. [X] Lay out shortage charts [X][X][X][X][X][]
 . Animate shortage charts to show detailed view [][][][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
 hash fragments)
@@ -112,8 +112,9 @@ need to change the size at the call of "draw". Done!
 
 OK, a couple more things here. First, let's center the charts on x. I think we
 need to pass the chart sizes into getChartLayout. Done. Let's check in.
-
-Second, let's add the chart title.
+Second, let's add the chart title. We may need to add some margins. OK, the
+titles are being displayed. Let's get the margins working. Looks pretty good.
+Just need to center the titles. Done!
 
 
 

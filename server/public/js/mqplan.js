@@ -113,7 +113,7 @@ chartsModule.directive("teamcharts", function() {
                 .enter()
                 .append("g").attr("class", "shortagechart")
                 .each(function(d, i) {
-                    charts.shortagechart.draw(d3.select(this), d.data, chartSizes[i]);
+                    charts.shortagechart.draw(d3.select(this), d, chartSizes[i]);
                 })
                 .call(charts.shortagechart.layOutCharts, chartLayouts)
                 .on('click', function(d) {
