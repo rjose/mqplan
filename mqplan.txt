@@ -102,7 +102,9 @@ this in.
 Next, let's write a layout function for the charts and figure out where to
 call it and use it. I want to pass in an array of charts and get back an array
 of layouts whose indices correspond to the chart array. Done! Let's check this
-in and then work on chart size.
+in and then work on chart size. The chart size should be proportional to the
+total demand/supply. This seems like a good candidate for a test. Let's write
+a function to compute this for one chart. Done. Let's check this in.
 
 Thoughts
 --------

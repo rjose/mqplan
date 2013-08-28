@@ -25,6 +25,31 @@ charts.shortagechart = {
             Math.ceil(chartArray.length / this.NUM_CHARTS_PER_ROW);
     },
 
+    getEffortSize: function(chartDataset) {
+        var shortage = chartDataset.shortage;
+        var demand = chartDataset.demand;
+        var anyShortage = false;
+        for (var i=0; i < shortage.length; i++) {
+            if (shortage[i].value > 0) {
+                anyShortage = true;
+                break;
+            }
+        }
+
+        var result = 0;
+        if (anyShortage) {
+            for (var i=0; i < demand.length; i++) {
+                result += demand[i].value;
+            }
+        }
+        else {
+            for (var i=0; i < shortage.length; i++) {
+                result -= shortage[i].value;
+            }
+        }
+        return result;
+    },
+
     getChartLayout: function(chartArray) {
         var xStep = this.MAX_CHART_WIDTH;
         var yStep = this.SINGLE_CHART_HEIGHT;
