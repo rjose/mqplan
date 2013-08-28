@@ -22,58 +22,59 @@ charts.shortagechart = {
         return this.SINGLE_CHART_HEIGHT;
     },
 
-   drawChart: function(d) {
+
+    drawChart: function(d) {
         charts.shortagechart.draw(d3.select(this), d.data);
-   },
+    },
 
-   //------------------------------------------------------------------------------
-   // Draws shortage chart in svg element.
-   //
-   draw: function(g, chart) {
-      if (!chart.type) return;
+    //------------------------------------------------------------------------------
+    // Draws shortage chart in svg element.
+    //
+    draw: function(g, chart) {
+        if (!chart.type) return;
 
-      // TODO: Set this ahead of time
-      var height = 300;
-      var width = 300;
-      charts.setChartHeight(g, height);
-      charts.setChartWidth(g, width);
+        // TODO: Set this ahead of time
+        var height = 300;
+        var width = 300;
+        charts.setChartHeight(g, height);
+        charts.setChartWidth(g, width);
 
-      var outerRadius = height / 2.0 * 0.8;
-      var leftMargin = 15;
-      var topMargin = 20;
-      var cx = outerRadius + leftMargin;
-      var cy = outerRadius + topMargin;
+        var outerRadius = height / 2.0 * 0.8;
+        var leftMargin = 15;
+        var topMargin = 20;
+        var cx = outerRadius + leftMargin;
+        var cy = outerRadius + topMargin;
 
 
-      // Compute total demand
-      var totalDemand = 0;
-      for (var i=0; i < chart.dataset.demand.length; i++) {
-         totalDemand += chart.dataset.demand[i].value;
-      }
+        // Compute total demand
+        var totalDemand = 0;
+        for (var i=0; i < chart.dataset.demand.length; i++) {
+            totalDemand += chart.dataset.demand[i].value;
+        }
 
-      // Analyze shortages
-      var shortageInfo = analyzeShortages(chart.dataset.shortage);
+        // Analyze shortages
+        var shortageInfo = analyzeShortages(chart.dataset.shortage);
 
-      //
-      // Draw donut and hole
-      //
-      // NOTE: For a normal layout, the shortages are the hole.
-      //       For an inverted layout, the demand is the hole.
-      if (shortageInfo.normal_layout) {
-         var innerRadius = outerRadius *
-                           Math.sqrt(shortageInfo.totalShortage/totalDemand);
+        //
+        // Draw donut and hole
+        //
+        // NOTE: For a normal layout, the shortages are the hole.
+        //       For an inverted layout, the demand is the hole.
+        if (shortageInfo.normal_layout) {
+            var innerRadius = outerRadius *
+                Math.sqrt(shortageInfo.totalShortage/totalDemand);
 
-         drawDonut(g, chart.dataset.demand, outerRadius, innerRadius, cx, cy, false);
-         drawHole(g, shortageInfo.shortages, innerRadius, cx, cy, false);
-      }
-      else {
-         var innerRadius = outerRadius *
-            Math.sqrt(totalDemand/(shortageInfo.totalShortage + totalDemand));
+            drawDonut(g, chart.dataset.demand, outerRadius, innerRadius, cx, cy, false);
+            drawHole(g, shortageInfo.shortages, innerRadius, cx, cy, false);
+        }
+        else {
+            var innerRadius = outerRadius *
+                Math.sqrt(totalDemand/(shortageInfo.totalShortage + totalDemand));
 
-         drawHole(g, chart.dataset.demand, innerRadius, cx, cy, true);
-         drawDonut(g, shortageInfo.shortages, outerRadius, innerRadius, cx, cy, true);
-      }
-   }
+            drawHole(g, chart.dataset.demand, innerRadius, cx, cy, true);
+            drawDonut(g, shortageInfo.shortages, outerRadius, innerRadius, cx, cy, true);
+        }
+    }
 }
 
 
