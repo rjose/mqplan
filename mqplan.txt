@@ -24,7 +24,7 @@ state.
 Implementation
 --------------
 . [X] Set up mqplan repo with qplan subtree [X][][]
-. Draw array of shortage charts [X][X][X][X][]
+. [X] Draw array of shortage charts [X][X][X][X][X]
 . Lay out shortage charts [][][][][][]
 . Animate shortage charts to show detailed view [][][][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
@@ -77,7 +77,27 @@ columns).
 
 Before we go, let's hook up a click handler for each chart. We may want to
 shrink the font size down as well. Done! OK, let's try animating to a position
-on click.
+on click. Done!
+
+
+3 - Lay out shortage charts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alright, the first thing I want to do is figure out how testing is managed in
+angular. Once I have that in place, I'll do some TDD on laying out charts.
+We'll start with just the straight chart data. Eventually, we'll draw lines
+for dependencies as well. Let's just install mocha and run our tests in our
+own way. OK, mocha works. Let's add a javascript vim syntax file before we
+proceed. Done!
+
+Now let's start thinking about laying out charts. We'll start with one chart.
+This should be centered horizontally in the space but near the top. We should
+specify the chart width and get back a chart height. I suppose this should be
+one function.
+
+OK, let's see if we can figure out the sequence of steps. When the chart data
+is set in the scope, we should check if a chart is selected or not. This will
+set the width. I'll add a note to this effect and go on. Done. Let's check
+this in.
 
 Thoughts
 --------
@@ -94,3 +114,4 @@ Action Items
 ------------
 - Make charts into their own module and share between qplan and mqplan
 - Need to clean up the charts (renaming, changing signatures)
+- Figure out how to create namespaces without using global vars

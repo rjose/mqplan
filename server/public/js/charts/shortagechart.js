@@ -12,9 +12,15 @@ var analyzeShortages = null;
 //==============================================================================
 // Public API
 //
-// TODO: Add example of data to pass in
+
 
 charts.shortagechart = {
+
+    SINGLE_CHART_HEIGHT: 320,
+
+    getChartHeight: function(width, chartArray) {
+        return this.SINGLE_CHART_HEIGHT;
+    },
 
    drawChart: function(d) {
         charts.shortagechart.draw(d3.select(this), d.data);

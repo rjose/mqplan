@@ -59,10 +59,22 @@ chartsModule.directive("teamcharts", function() {
                .attr("width", width)
                .attr("height", height);
 
+            // TODO: Figure out if a chart is selected
+            var selectedChart = null;
+
+            // If a chart is selected, then we'll have a narrow view for the
+            // shortage charts.
+            var chartWidth = 960;
+            if (selectedChart) {
+                chartWidth = 320;
+            }
+
+            var chartHeight = charts.shortagechart.getChartHeight(chartWidth, scope.charts);
+
             // TODO: Figure out how to set the size of the chart based on the
             // input data.
-            charts.setChartHeight(svg, 700);
-            charts.setChartWidth(svg, 700);
+            charts.setChartHeight(svg, chartHeight);
+            charts.setChartWidth(svg, chartWidth);
 
             // HACK: Figure out how to lay out charts and to set their sizes
             // TODO: Move the click handler to its own function
