@@ -104,7 +104,10 @@ call it and use it. I want to pass in an array of charts and get back an array
 of layouts whose indices correspond to the chart array. Done! Let's check this
 in and then work on chart size. The chart size should be proportional to the
 total demand/supply. This seems like a good candidate for a test. Let's write
-a function to compute this for one chart. Done. Let's check this in.
+a function to compute this for one chart. Done. Let's check this in. OK, now
+we can map this function over an array of charts. Done. Now, let's scale the
+sizes. This seems like a TDD thing. Done! Also did normalizeDimensions. Let's
+check this in.
 
 Thoughts
 --------
@@ -115,6 +118,8 @@ how we should always do this.
 At some point, we should split qplan up into a generic server module that we
 can pull into mqplan and qplan.
 
+I need to figure out how resize and layout happen when an item is clicked. It
+seems like this should go through the angular controller, no?
 
 
 Action Items

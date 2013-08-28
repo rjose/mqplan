@@ -64,6 +64,7 @@ chartsModule.directive("teamcharts", function() {
          var width = el.offsetWidth;
          var height = el.offsetHeight;
 
+         // TODO: Split the responsibilities of this function
          scope.$watch('charts', function() {
             if (!scope.charts) return;
 
@@ -90,6 +91,15 @@ chartsModule.directive("teamcharts", function() {
 
             // Get chart layout
             var chartLayouts = charts.shortagechart.getChartLayout(scope.charts);
+
+            // Compute chart sizes
+            var chartEffortSizes = [];
+            for (var i=0; i < scope.charts.length; i++) {
+                chartEffortSizes.push(
+                    charts.shortagechart
+                      .getEffortSize(scope.charts[i].data.dataset));
+            }
+            console.log(chartEffortSizes);
 
             // HACK: Figure out how to lay out charts and to set their sizes
             // TODO: Move the click handler to its own function

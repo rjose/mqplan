@@ -8,6 +8,22 @@ var drawDonut = null;
 var drawHole = null;
 var analyzeShortages = null;
 
+// TODO: Move this to a utils file
+
+function foldl(f, init, values) {
+    var result = init;
+    for (var i=0; i < values.length; i++) {
+        result = f(result, values[i]);
+    }
+    return result;
+}
+
+function maximum(values) {
+    if (values.length == 0)
+        return null;
+
+    return foldl(Math.max, values[0], values);
+}
 
 //==============================================================================
 // Public API
@@ -46,6 +62,19 @@ charts.shortagechart = {
             for (var i=0; i < shortage.length; i++) {
                 result -= shortage[i].value;
             }
+        }
+        return result;
+    },
+
+    normalizeDimensions: function(dimension, sizes) {
+        if (sizes.length == 0)
+            return [];
+
+        var max = maximum(sizes);
+        var scale = dimension/max;
+        var result = [];
+        for (var i=0; i < sizes.length; i++) {
+            result.push(scale * sizes[i]);
         }
         return result;
     },
