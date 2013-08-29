@@ -13,8 +13,42 @@ chartsModule.controller("MQPlanCtrl",
       $scope.selected = null;
 
       $scope.selectChart = function(index) {
-          console.log("Selecting " + index);
+          var selection = d3.selectAll("g.shortagechart");
+          var newLayouts = [];
+          for (var i=0; i < $scope.defaultChartLayouts.length; i++) {
+              var layout = $scope.defaultChartLayouts[i];
+              newLayouts.push([layout[0] + 50, layout[1] + 50]);
+          }
+
+          if ($scope.selected == index) {
+              charts.shortagechart.layOutCharts(selection, $scope.defaultChartLayouts);
+          }
+          else {
+              charts.shortagechart.layOutCharts(selection, newLayouts);
+              //var tree = d3.layout.tree();
+              //tree.size([960, 640]);
+              //tree.nodeSize([300, 300]);
+              //selection.call(function(selection) {
+              //    var nodes = selection[0];
+              //    var root = nodes[index];
+              //    var children = [];
+              //    for (var i=0; i < nodes.length; i++) {
+              //        if (i != index) {
+              //            children.push(nodes[i]);
+              //        }
+              //    }
+              //    root.children = children;
+              //    var newNodes = tree.nodes(root);
+
+              //    var newLayouts = [];
+              //    for (var i=0; i < newNodes.length; i++) {
+              //        newLayouts.push([newNodes[i].x, newNodes[i].y]);
+              //    }
+              //    charts.shortagechart.layOutCharts(selection, newLayouts);
+              //});
+          }
           $scope.selected = index;
+
       };
 
       $scope.charts = [
@@ -109,7 +143,7 @@ chartsModule.directive("teamcharts", function() {
                                     chartEffortSizes);
 
             // Get chart layout
-            var chartLayouts =
+            scope.defaultChartLayouts =
                 charts.shortagechart.getChartLayout(scope.charts,chartSizes);
 
             var data = [];
@@ -117,7 +151,7 @@ chartsModule.directive("teamcharts", function() {
                 data.push({
                     data: scope.charts[i],
                     size: chartSizes[i],
-                    layout: chartLayouts[i]
+                    layout: scope.defaultChartLayouts[i]
                 });
             }
 

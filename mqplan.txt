@@ -26,7 +26,7 @@ Implementation
 . [X] Set up mqplan repo with qplan subtree [X][][]
 . [X] Draw array of shortage charts [X][X][X][X][X]
 . [X] Lay out shortage charts [X][X][X][X][X][]
-. Animate shortage charts to show detailed view [][][][][]
+. Animate shortage charts to show detailed view [X][X][][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
 hash fragments)
 . cat data from multiple qplan servers into a stacked file [][][][]
@@ -122,6 +122,12 @@ Let's start by computing the layout for a selected chart. We'll move it to the
 top center and then move all the other charts below it. We'll trigger this on
 click. OK, I can wire things up. I think I should add some metadata to the
 data on initialization. Let me try exploring this. Done. Let's check this in.
+
+Alright, I can now select all of the shortage charts from my click handler.
+What I want to do next is to compute a new layout and apply it. Let's hack up
+a layout and give this a try. OK, I can switch between layouts now. Tomorrow,
+I'll try to come up with a selected chart layout. I'll also want to resize the
+size of the chart area and bring in a detailed chart view.
 
 
 Thoughts

@@ -98,7 +98,9 @@ charts.shortagechart = {
     },
 
     layOutCharts: function(selection, layouts) {
-        selection.attr("transform", function(d, i) {
+        selection.transition()
+         .duration(1000)
+         .attr("transform", function(d, i) {
             return "translate(" + (layouts[i][0]) + "," + (layouts[i][1]) + ")";
         });
     },
