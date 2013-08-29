@@ -26,10 +26,10 @@ Implementation
 . [X] Set up mqplan repo with qplan subtree [X][][]
 . [X] Draw array of shortage charts [X][X][X][X][X]
 . [X] Lay out shortage charts [X][X][X][X][X][]
-. Animate shortage charts to show detailed view [X][X][X][][]
-. Display detailed view [][][][][][][] (need data, need to resize svg, need
-hash fragments)
+. [X] Animate shortage charts to show detailed view [X][X][X][X][]
+. Display detailed view [X][][][][][][]
 . cat data from multiple qplan servers into a stacked file [][][][]
+. Clean stuff up
 
 
 1 - Set up mqplan repo with qplan subtree
@@ -133,6 +133,16 @@ Let's start by resizing the chart size. When should this happen? OK, I added
 this in the click handler of the controller (but we should move all of that UI
 code out ASAP). Now, let's do a really quick layout. We want to put one item at
 the top and the others below. We'll pack them. Done! Let's check this in.
+
+
+5 - Display detailed view
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Alright, let's start by looking into the hash fragments. I want to have a URL
+that has a chart selected. I've never done this before, so let me take a look at
+the angular docs. Alright, I have hash fragments now. Now, I need to clean up
+the controller organization so the right view is drawn for the path.
+
+(need data, need to resize svg, need hash fragments)
 
 
 Thoughts

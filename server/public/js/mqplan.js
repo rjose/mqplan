@@ -7,10 +7,22 @@ var chartsModule = angular.module("mqplan", []);
 // Controllers
 //
 chartsModule.controller("MQPlanCtrl",
-   ['$scope',
-   function($scope) {
+   ['$scope', '$location',
+   function($scope, $location) {
       $scope.title = "Array of Charts!";
       $scope.selected = null;
+      $location.path('main');
+
+      function setSelectedPath(index) {
+         if (index == null) {
+            $location.path('main');
+         }
+         else {
+            $location.path('chart' + index);
+         }
+      }
+
+      setSelectedPath(null);
 
       function computeSelectedChartLayout(selectedIndex, chartAreaWidth) {
          var charts = d3.selectAll("g.shortagechart");
@@ -21,8 +33,6 @@ chartsModule.controller("MQPlanCtrl",
             parseInt(d3.select(charts[0][selectedIndex]).attr("height")) + 100;
          console.log(curY);
          var newLayouts = [];
-
-         console.log(stepY);
 
          charts.each(function(d, i) {
             if (i == selectedIndex) {
@@ -44,16 +54,27 @@ chartsModule.controller("MQPlanCtrl",
       }
 
       $scope.selectChart = function(index) {
+         if ($scope.selected == index) {
+            setSelectedPath(null);
+         }
+         else {
+            setSelectedPath(index);
+         }
+
           var selection = d3.selectAll("g.shortagechart");
 
           // TODO: Move this layout code out of the controller
           // Set width of chart area based chart selection
-          var chartWidth = 960;
-          var chartLayouts = $scope.defaultChartLayouts;
+          var chartWidth;
+          var chartLayouts;
           if ($scope.selected != index) {
              chartWidth = 640;
              chartLayouts =
                 computeSelectedChartLayout(index, chartWidth);
+          }
+          else {
+             chartWidth = 960;
+             chartLayouts = $scope.defaultChartLayouts;
           }
           var chartHeight =
              charts.shortagechart.getChartHeight(chartWidth, $scope.charts);
@@ -66,7 +87,6 @@ chartsModule.controller("MQPlanCtrl",
           charts.setChartHeight(svg, chartHeight);
           charts.setChartWidth(svg, chartWidth);
           $scope.selected = index;
-
       };
 
       $scope.charts = [
