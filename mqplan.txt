@@ -129,6 +129,10 @@ a layout and give this a try. OK, I can switch between layouts now. Tomorrow,
 I'll try to come up with a selected chart layout. I'll also want to resize the
 size of the chart area and bring in a detailed chart view.
 
+Let's start by resizing the chart size. When should this happen? OK, I added
+this in the click handler of the controller (but we should move all of that UI
+code out ASAP).
+
 
 Thoughts
 --------

@@ -12,41 +12,37 @@ chartsModule.controller("MQPlanCtrl",
       $scope.title = "Array of Charts!";
       $scope.selected = null;
 
-      $scope.selectChart = function(index) {
-          var selection = d3.selectAll("g.shortagechart");
+      function computeSelectedChartLayout(selected, charts) {
+         // TODO: Implement these properly
           var newLayouts = [];
           for (var i=0; i < $scope.defaultChartLayouts.length; i++) {
               var layout = $scope.defaultChartLayouts[i];
               newLayouts.push([layout[0] + 50, layout[1] + 50]);
           }
+          return newLayouts;
+      }
 
-          if ($scope.selected == index) {
-              charts.shortagechart.layOutCharts(selection, $scope.defaultChartLayouts);
-          }
-          else {
-              charts.shortagechart.layOutCharts(selection, newLayouts);
-              //var tree = d3.layout.tree();
-              //tree.size([960, 640]);
-              //tree.nodeSize([300, 300]);
-              //selection.call(function(selection) {
-              //    var nodes = selection[0];
-              //    var root = nodes[index];
-              //    var children = [];
-              //    for (var i=0; i < nodes.length; i++) {
-              //        if (i != index) {
-              //            children.push(nodes[i]);
-              //        }
-              //    }
-              //    root.children = children;
-              //    var newNodes = tree.nodes(root);
+      $scope.selectChart = function(index) {
+          var selection = d3.selectAll("g.shortagechart");
 
-              //    var newLayouts = [];
-              //    for (var i=0; i < newNodes.length; i++) {
-              //        newLayouts.push([newNodes[i].x, newNodes[i].y]);
-              //    }
-              //    charts.shortagechart.layOutCharts(selection, newLayouts);
-              //});
+          // TODO: Move this layout code out of the controller
+          // Set width of chart area based chart selection
+          var chartWidth = 960;
+          var chartLayouts = $scope.defaultChartLayouts;
+          if ($scope.selected != index) {
+             chartWidth = 640;
+             chartLayouts = computeSelectedChartLayout(index, $scope.charts);
           }
+          var chartHeight =
+             charts.shortagechart.getChartHeight(chartWidth, $scope.charts);
+
+          // Lay out charts
+          charts.shortagechart.layOutCharts(selection, chartLayouts);
+
+          // Apply new chart width and height
+          var svg = d3.select("svg#charts");
+          charts.setChartHeight(svg, chartHeight);
+          charts.setChartWidth(svg, chartWidth);
           $scope.selected = index;
 
       };
@@ -114,9 +110,11 @@ chartsModule.directive("teamcharts", function() {
 
             var svg = d3.select(element[0])
                .append("svg")
+               .attr("id", "charts")
                .attr("width", width)
                .attr("height", height);
 
+            // TODO: figure out if we can assume initial set up here
             // TODO: Figure out if a chart is selected
             var selectedChart = null;
 
