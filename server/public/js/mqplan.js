@@ -12,13 +12,34 @@ chartsModule.controller("MQPlanCtrl",
       $scope.title = "Array of Charts!";
       $scope.selected = null;
 
-      function computeSelectedChartLayout(selected, charts) {
-         // TODO: Implement these properly
-          var newLayouts = [];
-          for (var i=0; i < $scope.defaultChartLayouts.length; i++) {
-              var layout = $scope.defaultChartLayouts[i];
-              newLayouts.push([layout[0] + 50, layout[1] + 50]);
-          }
+      function computeSelectedChartLayout(selectedIndex, chartAreaWidth) {
+         var charts = d3.selectAll("g.shortagechart");
+         var curX = 0;
+         var stepY = 400;
+         var marginX = 70;
+         var curY =
+            parseInt(d3.select(charts[0][selectedIndex]).attr("height")) + 100;
+         console.log(curY);
+         var newLayouts = [];
+
+         console.log(stepY);
+
+         charts.each(function(d, i) {
+            if (i == selectedIndex) {
+               newLayouts.push([50, 50]);
+            }
+            else {
+               newLayouts.push([curX, curY]);
+               var chartWidth = parseInt(d3.select(this).attr('width'));
+               if (curX + chartWidth >= chartAreaWidth) {
+                  curX = 0;
+                  curY += stepY;
+               }
+               else {
+                  curX += (chartWidth + marginX);
+               }
+            }
+         });
           return newLayouts;
       }
 
@@ -31,7 +52,8 @@ chartsModule.controller("MQPlanCtrl",
           var chartLayouts = $scope.defaultChartLayouts;
           if ($scope.selected != index) {
              chartWidth = 640;
-             chartLayouts = computeSelectedChartLayout(index, $scope.charts);
+             chartLayouts =
+                computeSelectedChartLayout(index, chartWidth);
           }
           var chartHeight =
              charts.shortagechart.getChartHeight(chartWidth, $scope.charts);

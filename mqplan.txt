@@ -26,7 +26,7 @@ Implementation
 . [X] Set up mqplan repo with qplan subtree [X][][]
 . [X] Draw array of shortage charts [X][X][X][X][X]
 . [X] Lay out shortage charts [X][X][X][X][X][]
-. Animate shortage charts to show detailed view [X][X][][][]
+. Animate shortage charts to show detailed view [X][X][X][][]
 . Display detailed view [][][][][][][] (need data, need to resize svg, need
 hash fragments)
 . cat data from multiple qplan servers into a stacked file [][][][]
@@ -131,7 +131,8 @@ size of the chart area and bring in a detailed chart view.
 
 Let's start by resizing the chart size. When should this happen? OK, I added
 this in the click handler of the controller (but we should move all of that UI
-code out ASAP).
+code out ASAP). Now, let's do a really quick layout. We want to put one item at
+the top and the others below. We'll pack them. Done! Let's check this in.
 
 
 Thoughts

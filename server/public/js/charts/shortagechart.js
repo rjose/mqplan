@@ -39,8 +39,8 @@ charts.shortagechart = {
 
     getChartHeight: function(width, chartArray) {
 
-        return (this.SINGLE_CHART_HEIGHT +this.TOP_MARGIN) *
-            Math.ceil(chartArray.length / this.NUM_CHARTS_PER_ROW);
+       var numRows = Math.ceil(chartArray.length / this.NUM_CHARTS_PER_ROW) + 1;
+       return (this.SINGLE_CHART_HEIGHT + this.TOP_MARGIN) * numRows;
     },
 
     getEffortSize: function(chartDataset) {
