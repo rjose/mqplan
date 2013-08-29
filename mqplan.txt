@@ -140,9 +140,22 @@ the top and the others below. We'll pack them. Done! Let's check this in.
 Alright, let's start by looking into the hash fragments. I want to have a URL
 that has a chart selected. I've never done this before, so let me take a look at
 the angular docs. Alright, I have hash fragments now. Now, I need to clean up
-the controller organization so the right view is drawn for the path.
+the controller organization so the right view is drawn for the path. Let's do
+this next. OK, I can listen for path changes now. Next, I need to draw based on
+the path. I think I need to push a lot of the rendering code into the directive.
 
-(need data, need to resize svg, need hash fragments)
+OK, I need to work out how things get started. Let me write it out here:
+
+        . User navigates to URL
+        . On load, the app requests chart data
+        . The app lays out the charts according to the URL
+        . Event handlers are hooked up
+
+Alright, I got something working that loads from the URL properly. It's not
+quite right though. I need to clean this up. Let's check in and see how hard it
+is to refactor all of this.
+
+TODO: Change port for mqplan
 
 
 Thoughts

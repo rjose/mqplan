@@ -97,12 +97,13 @@ charts.shortagechart = {
         return result;
     },
 
-    layOutCharts: function(selection, layouts) {
+    layOutCharts: function(selection, layouts, callback) {
         selection.transition()
          .duration(1000)
          .attr("transform", function(d, i) {
             return "translate(" + (layouts[i][0]) + "," + (layouts[i][1]) + ")";
-        });
+        })
+         .each("end", callback);
     },
 
     //------------------------------------------------------------------------------

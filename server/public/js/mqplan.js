@@ -11,7 +11,9 @@ chartsModule.controller("MQPlanCtrl",
    function($scope, $location) {
       $scope.title = "Array of Charts!";
       $scope.selected = null;
-      $location.path('main');
+      $scope.charts_ready = false;
+      $scope.location = $location;
+
 
       function setSelectedPath(index) {
          if (index == null) {
@@ -22,16 +24,54 @@ chartsModule.controller("MQPlanCtrl",
          }
       }
 
-      setSelectedPath(null);
+      //
+      //
+      // NOTE: Assuming that the charts have already been rendered
+      function renderPath(path) {
+         var chartWidth;
+         var chartLayouts;
+         var matcher = /chart(\d+)/;
+         var match = matcher.exec(path);
+
+         if (!match) {
+            chartWidth = 960;
+            chartLayouts = $scope.defaultChartLayouts;
+         }
+         else {
+            var index = parseInt(match[1]);
+            chartWidth = 640;
+            chartLayouts = computeSelectedChartLayout(index, chartWidth);
+         }
+
+         var resizeChart = function() {
+            // Apply new chart width and height
+            var svg = d3.select("svg#charts");
+            var chartHeight =
+               charts.shortagechart.getChartHeight(chartWidth, $scope.charts);
+            charts.setChartHeight(svg, chartHeight);
+            charts.setChartWidth(svg, chartWidth);
+         }
+
+         if (path == "main") {
+            resizeChart();
+         }
+
+         // Move charts into new positions
+         var selection = d3.selectAll("g.shortagechart");
+         charts.shortagechart.layOutCharts(selection, chartLayouts, resizeChart);
+      }
+
+      $scope.renderPath = renderPath;
+
 
       function computeSelectedChartLayout(selectedIndex, chartAreaWidth) {
+         console.log(selectedIndex);
          var charts = d3.selectAll("g.shortagechart");
          var curX = 0;
          var stepY = 400;
          var marginX = 70;
          var curY =
             parseInt(d3.select(charts[0][selectedIndex]).attr("height")) + 100;
-         console.log(curY);
          var newLayouts = [];
 
          charts.each(function(d, i) {
@@ -56,38 +96,15 @@ chartsModule.controller("MQPlanCtrl",
       $scope.selectChart = function(index) {
          if ($scope.selected == index) {
             setSelectedPath(null);
+            $scope.selected = null;
          }
          else {
             setSelectedPath(index);
+            $scope.selected = index;
          }
 
-          var selection = d3.selectAll("g.shortagechart");
-
-          // TODO: Move this layout code out of the controller
-          // Set width of chart area based chart selection
-          var chartWidth;
-          var chartLayouts;
-          if ($scope.selected != index) {
-             chartWidth = 640;
-             chartLayouts =
-                computeSelectedChartLayout(index, chartWidth);
-          }
-          else {
-             chartWidth = 960;
-             chartLayouts = $scope.defaultChartLayouts;
-          }
-          var chartHeight =
-             charts.shortagechart.getChartHeight(chartWidth, $scope.charts);
-
-          // Lay out charts
-          charts.shortagechart.layOutCharts(selection, chartLayouts);
-
-          // Apply new chart width and height
-          var svg = d3.select("svg#charts");
-          charts.setChartHeight(svg, chartHeight);
-          charts.setChartWidth(svg, chartWidth);
-          $scope.selected = index;
       };
+
 
       $scope.charts = [
         {title: 'Chart 1', data: {type: 'shortagechart',
@@ -123,6 +140,14 @@ chartsModule.controller("MQPlanCtrl",
                         {label: 'Native', value: -5}
                 ]}}}
       ];
+
+      $scope.$watch(function() {return $location.path()},
+         function(newpath) {
+            if ($scope.charts_ready) {
+               renderPath(newpath.substring(1));
+            }
+         }
+      );
    }]
 );
 
@@ -208,14 +233,11 @@ chartsModule.directive("teamcharts", function() {
                 .on('click', function(d, i) {
                     scope.selectChart(i);
                     scope.$apply();
-
-//                        var selectedChart = d3.select(this);
-//                        selectedChart.transition()
-//                                .duration(1000)
-//                                .attr("transform", function(d, i) {
-//                                        return "translate(" + (i * 300 + 200) + "," + 0 + ")";
-//                                });
                  });
+
+
+            scope.charts_ready = true;
+            scope.renderPath(scope.location.path().substring(1));
          });
       }
    } });
