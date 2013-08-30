@@ -153,9 +153,21 @@ OK, I need to work out how things get started. Let me write it out here:
 
 Alright, I got something working that loads from the URL properly. It's not
 quite right though. I need to clean this up. Let's check in and see how hard it
-is to refactor all of this.
+is to refactor all of this. I'll create a refactor branch and start tearing
+through this.
+
+.Refactor
+Let's start by clearing out the controller. Done! Now, let's take a closer look
+at the  teamcharts directive.
+
+After that, we'll do the following:
+
+        - Restructure data
+        - Make all names camelcase
 
 TODO: Change port for mqplan
+
+Hmmm. Running into a problem where we needed the charts to be laid out first.
 
 
 Thoughts

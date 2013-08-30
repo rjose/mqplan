@@ -32,16 +32,6 @@ function maximum(values) {
 
 charts.shortagechart = {
 
-    MAX_CHART_WIDTH: 320,
-    SINGLE_CHART_HEIGHT: 320,
-    NUM_CHARTS_PER_ROW: 3,
-    TOP_MARGIN: 50,
-
-    getChartHeight: function(width, chartArray) {
-
-       var numRows = Math.ceil(chartArray.length / this.NUM_CHARTS_PER_ROW) + 1;
-       return (this.SINGLE_CHART_HEIGHT + this.TOP_MARGIN) * numRows;
-    },
 
     getEffortSize: function(chartDataset) {
         var shortage = chartDataset.shortage;
@@ -68,43 +58,6 @@ charts.shortagechart = {
         return result;
     },
 
-    normalizeDimensions: function(dimension, sizes) {
-        if (sizes.length == 0)
-            return [];
-
-        var max = maximum(sizes);
-        var scale = dimension/max;
-        var result = [];
-        for (var i=0; i < sizes.length; i++) {
-            result.push(scale * sizes[i]);
-        }
-        return result;
-    },
-
-    getChartLayout: function(chartArray, chartSizes) {
-        var xStep = this.MAX_CHART_WIDTH;
-        var yStep = this.SINGLE_CHART_HEIGHT + this.TOP_MARGIN;
-
-        var curX = 0;
-        var curY = 0;
-        var result = [];
-        for (var i=0; i < chartArray.length; i++) {
-            var sizeOffset = (this.MAX_CHART_WIDTH - chartSizes[i])/2.0;
-            curX = xStep * (i % this.NUM_CHARTS_PER_ROW) + sizeOffset;
-            curY = this.TOP_MARGIN + yStep * Math.floor(i / this.NUM_CHARTS_PER_ROW);
-            result.push([curX, curY]);
-        }
-        return result;
-    },
-
-    layOutCharts: function(selection, layouts, callback) {
-        selection.transition()
-         .duration(1000)
-         .attr("transform", function(d, i) {
-            return "translate(" + (layouts[i][0]) + "," + (layouts[i][1]) + ")";
-        })
-         .each("end", callback);
-    },
 
     //------------------------------------------------------------------------------
     // Draws shortage chart in svg element.
@@ -114,8 +67,8 @@ charts.shortagechart = {
         var size = chartData.size;
         var layout = chartData.layout;
 
-        if (!chart.data.type) return;
-        var dataset = chart.data.dataset;
+        if (!chart.type) return;
+        var dataset = chart.dataset;
 
         var height = size;
         var width = size;
